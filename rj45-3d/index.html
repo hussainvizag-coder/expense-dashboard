@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>RJ45 Wall Socket – 3D Model</title>
+<style>
+  html,body{margin:0;height:100%;background:#1b1d21;overflow:hidden;font-family:system-ui,sans-serif}
+  canvas{display:block}
+  #hud{position:fixed;left:16px;bottom:14px;color:#cfd3da;font-size:13px;opacity:.8;user-select:none}
+  #hud button{background:#2c3038;color:#e8eaee;border:1px solid #444a55;border-radius:6px;padding:6px 10px;margin-right:6px;cursor:pointer}
+  body.capture #hud{display:none}
+</style>
+<script type="importmap">{"imports":{"three":"./lib/three.module.js"}}</script>
+</head>
+<body>
+<div id="hud">
+  <button id="bExplode">Explode / assemble</button>
+  <button id="bSpin">Auto-rotate</button>
+  Drag to orbit · scroll to zoom
+</div>
+<script type="module">
+import * as THREE from './lib/three.module.js';
+import { OrbitControls } from './lib/OrbitControls.js';
+import { RoomEnvironment } from './lib/RoomEnvironment.js';
+
+const params = new URLSearchParams(location.search);
+const CAPTURE = params.has('capture');
+const W = +params.get('w') || innerWidth, H = +params.get('h') || innerHeight;
+if (CAPTURE) document.body.classList.add('capture');
+
+// ---------- renderer / scene ----------
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(CAPTURE ? 1 : Math.min(devicePixelRatio, 2));
+renderer.setSize(W, H);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+document.body.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+
+// gradient backdrop
+{
+  const c = document.createElement('canvas'); c.width = 4; c.height = 512;
+  const g = c.getContext('2d'), gr = g.createLinearGradient(0, 0, 0, 512);
+  gr.addColorStop(0, '#e9ecef'); gr.addColorStop(0.55, '#c9ced5'); gr.addColorStop(1, '#8e949c');
+  g.fillStyle = gr; g.fillRect(0, 0, 4, 512);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
+  scene.background = t;
+}
+
+const camera = new THREE.PerspectiveCamera(30, W / H, 1, 2000);
+camera.position.set(150, 40, 230);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.target.set(0, 0, -8);
+controls.enableDamping = true;
+controls.minDistance = 90; controls.maxDistance = 600;
+
+// lights
+scene.add(new THREE.HemisphereLight(0xffffff, 0x404048, 0.6));
+const key = new THREE.DirectionalLight(0xffffff, 2.2);
+key.position.set(120, 180, 160);
+key.castShadow = true;
+key.shadow.mapSize.set(2048, 2048);
+Object.assign(key.shadow.camera, { left: -120, right: 120, top: 120, bottom: -120, near: 10, far: 600 });
+key.shadow.bias = -0.0005; key.shadow.radius = 4;
+scene.add(key);
+const rim = new THREE.DirectionalLight(0xdfe8ff, 1.0); rim.position.set(-160, 60, -140); scene.add(rim);
+
+// desk (dark matte like the photos)
+const desk = new THREE.Mesh(
+  new THREE.CircleGeometry(900, 96),
+  new THREE.MeshStandardMaterial({ color: 0x1c1d20, roughness: 0.55, metalness: 0.0 })
+);
+desk.rotation.x = -Math.PI / 2; desk.position.y = -43.6; desk.receiveShadow = true;
+scene.add(desk);
+
+// ---------- materials ----------
+const M = {
+  white:   new THREE.MeshPhysicalMaterial({ color: 0xf6f6f3, roughness: 0.32, clearcoat: 0.6, clearcoatRoughness: 0.25 }),
+  rim:     new THREE.MeshStandardMaterial({ color: 0xc9ccd0, roughness: 0.35, metalness: 0.35 }),
+  module:  new THREE.MeshStandardMaterial({ color: 0xe9eaea, roughness: 0.45 }),
+  jackIn:  new THREE.MeshStandardMaterial({ color: 0xd9d9d4, roughness: 0.6 }),
+  clear:   new THREE.MeshPhysicalMaterial({ color: 0xffffff, roughness: 0.08, transmission: 0.9, thickness: 1.2, ior: 1.45, transparent: true, opacity: 0.55 }),
+  black:   new THREE.MeshStandardMaterial({ color: 0x18181a, roughness: 0.62 }),
+  lattice: new THREE.MeshStandardMaterial({ color: 0xeeeeea, roughness: 0.55 }),
+  brass:   new THREE.MeshStandardMaterial({ color: 0xc9b37e, roughness: 0.28, metalness: 1.0 }),
+  gold:    new THREE.MeshStandardMaterial({ color: 0xe6be5a, roughness: 0.2, metalness: 1.0 }),
+  keyst:   new THREE.MeshStandardMaterial({ color: 0xf2f2ee, roughness: 0.5 }),
+};
+
+const shadowed = o => { o.traverse(m => { if (m.isMesh) { m.castShadow = true; m.receiveShadow = true; } }); return o; };
+function box(w, h, d, mat, x = 0, y = 0, z = 0) {
+  const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat); m.position.set(x, y, z); return m;
+}
+function rrect(w, h, r, x = 0, y = 0) {
+  const s = new THREE.Shape(), hw = w / 2, hh = h / 2;
+  s.moveTo(x - hw + r, y - hh); s.lineTo(x + hw - r, y - hh); s.quadraticCurveTo(x + hw, y - hh, x + hw, y - hh + r);
+  s.lineTo(x + hw, y + hh - r); s.quadraticCurveTo(x + hw, y + hh, x + hw - r, y + hh);
+  s.lineTo(x - hw + r, y + hh); s.quadraticCurveTo(x - hw, y + hh, x - hw, y + hh - r);
+  s.lineTo(x - hw, y - hh + r); s.quadraticCurveTo(x - hw, y - hh, x - hw + r, y - hh);
+  return s;
+}
+function rrectPath(w, h, r, x = 0, y = 0) { const p = new THREE.Path(); p.curves = rrect(w, h, r, x, y).curves; return p; }
+function extrude(shape, depth, mat, bevel = 0) {
+  const g = new THREE.ExtrudeGeometry(shape, {
+    depth, bevelEnabled: bevel > 0, bevelThickness: bevel, bevelSize: bevel, bevelSegments: 4, curveSegments: 10,
+  });
+  return new THREE.Mesh(g, mat);
+}
+
+// ---------- model (units: mm; front face toward +Z) ----------
+const root = new THREE.Group(); scene.add(root);
+const parts = {}; // exploded-view groups with their offsets
+
+// 1) Front white faceplate (86 x 86) with module window
+const front = new THREE.Group();
+{
+  const s = rrect(83, 83, 3.5);
+  s.holes.push(rrectPath(24.5, 47, 1));
+  const plate = extrude(s, 6.5, M.white, 1.5);
+  plate.position.z = 1.5;
+  front.add(plate);
+  // thin silver rim at the back edge of the plate (visible as the grey edge line)
+  const rs = rrect(86, 86, 4.5); rs.holes.push(rrectPath(80, 80, 3));
+  const rimM = extrude(rs, 1.4, M.rim); rimM.position.z = 0; front.add(rimM);
+
+  // module insert (sits in the window)
+  const ins = new THREE.Group();
+  const frameS = rrect(24.4, 46.8, 0.8);
+  frameS.holes.push(rrectPath(19, 10, 0.6, 0, 15.5));     // label window
+  frameS.holes.push(rrectPath(14.6, 13.4, 0.4, 0, -4.8)); // RJ45 opening
+  const fr = extrude(frameS, 7.0, M.module, 0.35); fr.position.z = 1.2; ins.add(fr);
+
+  // clear label lens with little tabs
+  const lens = box(18.6, 9.6, 1.2, M.clear, 0, 15.5, 7.6); ins.add(lens);
+  for (const sx of [-1, 1]) ins.add(box(1.6, 1.2, 0.6, M.module, sx * 4.5, 15.5 + 4.2, 8.3));
+  ins.add(box(17, 7.5, 0.4, M.lattice, 0, 15.5, 3.8)); // paper label behind lens
+
+  // RJ45 port cavity
+  const cav = new THREE.Group();
+  cav.add(box(14.6, 0.6, 9, M.jackIn, 0, -4.8 - 6.4, 2.5));
+  cav.add(box(14.6, 0.6, 9, M.jackIn, 0, -4.8 + 6.4, 2.5));
+  cav.add(box(0.6, 13.4, 9, M.jackIn, -7.0, -4.8, 2.5));
+  cav.add(box(0.6, 13.4, 9, M.jackIn, 7.0, -4.8, 2.5));
+  cav.add(box(14.6, 13.4, 0.6, M.jackIn, 0, -4.8, -2));
+  // contact comb (8 gold contacts) near the top
+  for (let i = 0; i < 8; i++) {
+    const x = -4.45 + i * 1.27;
+    cav.add(box(0.45, 0.45, 6, M.gold, x, -4.8 + 5.6, 3.5));
+    const c = box(0.45, 3.2, 0.45, M.gold, x, -4.8 + 4.3, 6.4); c.rotation.x = -0.5; cav.add(c);
+    cav.add(box(0.7, 3.8, 0.8, M.jackIn, x + 0.635, -4.8 + 4.4, 1.2));
+  }
+  // latch key slot (stepped bottom) of the RJ45 opening
+  cav.add(box(4.8, 2.2, 7.5, M.jackIn, -5.0, -4.8 - 5.6, 3.6));
+  cav.add(box(4.8, 2.2, 7.5, M.jackIn, 5.0, -4.8 - 5.6, 3.6));
+  // bottom chamfer/ramp under the port
+  const ramp = box(14, 4, 1, M.module, 0, -14.3, 7.4); ramp.rotation.x = -0.75; ins.add(ramp);
+  ins.add(cav);
+  front.add(ins);
+}
+root.add(front); parts.front = { obj: front, off: 34 };
+
+// 2) Black mounting frame with diamond lattice + screw ears
+const frame = new THREE.Group();
+{
+  const z0 = -8.5, d = 8.5;
+  const outer = rrect(84, 84, 3); outer.holes.push(rrectPath(81, 81, 2.2));
+  { const _m = extrude(outer, d, M.black); _m.position.z = z0; frame.add(_m); }
+  const inner = rrect(71, 71, 2); inner.holes.push(rrectPath(68.5, 68.5, 1.5));
+  { const _m = extrude(inner, d, M.black); _m.position.z = z0; frame.add(_m); }
+  // back flange connecting the two rings
+  const fl = rrect(84, 84, 3); fl.holes.push(rrectPath(69, 69, 1.5));
+  { const _m = extrude(fl, 1.2, M.black); _m.position.z = z0 + d - 1.2; frame.add(_m); }
+  // zig-zag ribs in the ring (the "X" lattice seen from behind)
+  const ringMid = 38.1, gap = 6.2, n = 7;
+  for (let side = 0; side < 4; side++) {
+    const g = new THREE.Group(); g.rotation.z = side * Math.PI / 2;
+    for (let i = 0; i < n; i++) {
+      const t = -36 + (i + 0.5) * (72 / n), len = Math.hypot(gap, 72 / n / 2) + 0.6;
+      for (const dir of [-1, 1]) {
+        const r = box(1.0, len, d - 0.8, M.black, t + dir * 72 / n / 4, ringMid, z0 + d / 2 - 0.4);
+        r.rotation.z = Math.PI / 2 - dir * Math.atan2(gap, 72 / n / 2);
+        g.add(r);
+      }
+    }
+    frame.add(g);
+  }
+  // screw ears (bosses bridging into the frame on left/right)
+  for (const sx of [-1, 1]) {
+    const ear = new THREE.Mesh(new THREE.CylinderGeometry(4.2, 4.2, 6, 28), M.black);
+    ear.rotation.x = Math.PI / 2; ear.position.set(sx * 30, 0, z0 + 3); frame.add(ear);
+    frame.add(box(8, 6.5, 6, M.black, sx * 34.5, 0, z0 + 3));
+  }
+}
+root.add(frame); parts.frame = { obj: frame, off: 0 };
+
+// 3) White inner lattice panel
+const panel = new THREE.Group();
+{
+  const s = rrect(68, 68, 1.5);
+  s.holes.push(rrectPath(27, 50, 0.8));          // module window
+  s.holes.push(rrectPath(14, 40, 0.8, -21, 0));  // side windows
+  s.holes.push(rrectPath(14, 40, 0.8, 21, 0));
+  const p = extrude(s, 1.2, M.lattice); p.position.z = -2.4; panel.add(p);
+  // lattice band top and bottom (diagonal ribs)
+  for (const sy of [-1, 1]) {
+    panel.add(box(66, 0.9, 4, M.lattice, 0, sy * 27, -4.4));
+    panel.add(box(66, 0.9, 4, M.lattice, 0, sy * 33.3, -4.4));
+    for (let i = 0; i < 16; i++) {
+      const x = -31 + i * 4.15;
+      for (const dir of [-1, 1]) {
+        const r = box(0.7, 7.2, 4, M.lattice, x, sy * 30.15, -4.4); r.rotation.z = dir * 0.62; panel.add(r);
+      }
+    }
+    for (const sx of [-1, 1]) panel.add(box(0.9, 60, 4, M.lattice, sx * 33.3, 0, -4.4));
+  }
+  // walls around side windows (the deep rectangular pockets)
+  for (const sx of [-1, 1]) {
+    panel.add(box(14, 40, 0.8, M.lattice, sx * 21, 0, -7.2));
+    panel.add(box(0.8, 40, 5, M.lattice, sx * 14, 0, -4.8));
+    panel.add(box(0.8, 40, 5, M.lattice, sx * 28, 0, -4.8));
+  }
+}
+root.add(panel); parts.panel = { obj: panel, off: 0 };
+
+// 4) Keystone jack (Cat6 style) on the back
+const jack = new THREE.Group();
+{
+  // housing that clips into the panel
+  jack.add(box(17, 23, 12, M.keyst, 0, -2, -8));
+  jack.add(box(15, 4, 7, M.keyst, 0, 11.5, -6.5));      // top latch
+  const latch = box(6, 1.2, 8, M.keyst, 0, 13.6, -8); latch.rotation.x = 0.18; jack.add(latch);
+  // termination block (IDC) with stepped profile
+  jack.add(box(19, 20, 9, M.keyst, 0, -2.5, -18.5));
+  jack.add(box(15, 22, 4, M.keyst, 0, -2.5, -25));
+  // IDC slots
+  for (let i = 0; i < 4; i++) for (const sx of [-1, 1]) {
+    jack.add(box(0.6, 2.2, 3.2, M.black, sx * (3 + i * 1.6), 8.7, -24.5));
+    jack.add(box(0.6, 2.2, 3.2, M.black, sx * (3 + i * 1.6), -13.7, -24.5));
+  }
+  // T568A/B colour code label on the back of the cap
+  const c = document.createElement('canvas'); c.width = 256; c.height = 384;
+  const g = c.getContext('2d');
+  g.fillStyle = '#f4f4f0'; g.fillRect(0, 0, 256, 384);
+  const cols = [['#f08a24', '#f8c38a'], ['#1d7fd1', '#9fcbf2'], ['#2c9b4a', '#a6dbb3'], ['#7b4a22', '#c9a07e']];
+  cols.forEach(([a, b], i) => {
+    const x = 18 + i * 56;
+    g.fillStyle = a; g.fillRect(x, 150, 24, 60); g.fillStyle = b; g.fillRect(x + 24, 150, 24, 60);
+  });
+  g.fillStyle = '#333'; g.font = 'bold 34px sans-serif'; g.textAlign = 'center';
+  g.fillText('A', 64, 260); g.fillText('B', 192, 260);
+  g.font = 'bold 28px sans-serif'; g.fillText('CAT6', 128, 90);
+  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
+  const lab = new THREE.Mesh(new THREE.PlaneGeometry(14, 21), new THREE.MeshStandardMaterial({ map: tex, roughness: 0.5 }));
+  lab.position.set(0, -2.5, -27.05); lab.rotation.y = Math.PI; jack.add(lab);
+  // side colour stripes (visible from the side like in photo 1)
+  for (const sx of [-1, 1]) {
+    const st = new THREE.Mesh(new THREE.PlaneGeometry(8, 3), new THREE.MeshStandardMaterial({ color: sx < 0 ? 0xf08a24 : 0x1d7fd1, roughness: 0.5 }));
+    st.position.set(sx * 9.55, -6, -18.5); st.rotation.y = sx * Math.PI / 2; jack.add(st);
+  }
+}
+root.add(jack); parts.jack = { obj: jack, off: -26 };
+
+// 5) Brass mounting screws (M3.5 x 25)
+const screws = new THREE.Group();
+{
+  for (const sx of [-1, 1]) {
+    const s = new THREE.Group();
+    s.add(new THREE.Mesh(new THREE.CylinderGeometry(1.75, 1.75, 26, 24), M.brass));
+    for (let i = 0; i < 30; i++) {
+      const t = new THREE.Mesh(new THREE.TorusGeometry(1.75, 0.32, 6, 24), M.brass);
+      t.rotation.x = Math.PI / 2; t.position.y = -12.5 + i * 0.85; s.add(t);
+    }
+    const tip = new THREE.Mesh(new THREE.ConeGeometry(1.75, 1.6, 24), M.brass); tip.position.y = -13.8; tip.rotation.x = Math.PI; s.add(tip);
+    const head = new THREE.Mesh(new THREE.CylinderGeometry(3.4, 3.0, 2.2, 28), M.brass); head.position.y = 13.6; s.add(head);
+    s.add(box(5.2, 0.6, 0.8, M.black, 0, 14.5, 0));
+    s.rotation.x = Math.PI / 2;    // axis along Z, head at front
+    s.position.set(sx * 30, 0, -19.5);
+    screws.add(s);
+  }
+}
+root.add(screws); parts.screws = { obj: screws, off: -46 };
+
+shadowed(root);
+// lift so the plate stands on the desk, like in the photos
+root.position.y = 0;
+
+// ---------- animation helpers ----------
+let explode = 0, explodeTarget = 0, spin = !CAPTURE;
+function applyExplode(e) {
+  for (const k in parts) parts[k].obj.position.z = parts[k].off * e;
+}
+const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+// Deterministic shot for capture: t in seconds
+window.setShot = (t, total = 14) => {
+  // 0-9s: full turntable orbit; 9-14s: explode & reassemble at a 3/4 rear view
+  let az, el = 0.18, dist = 270, e = 0;
+  if (t < 9) {
+    const u = ease(t / 9);
+    az = 0.55 + u * Math.PI * 2;
+    el = 0.18 + 0.12 * Math.sin(u * Math.PI * 2);
+  } else {
+    const u = (t - 9) / 5;
+    az = 0.55 + Math.PI * 2 + 0.75 * ease(u) ;
+    el = 0.22; dist = 300;
+    e = u < 0.35 ? ease(u / 0.35) : u < 0.7 ? 1 : 1 - ease((u - 0.7) / 0.3);
+  }
+  applyExplode(e);
+  camera.position.set(Math.sin(az) * Math.cos(el) * dist, Math.sin(el) * dist, Math.cos(az) * Math.cos(el) * dist);
+  camera.lookAt(0, 0, -10);
+  renderer.render(scene, camera);
+};
+window.setView = (az, el, dist, e = 0) => {
+  applyExplode(e);
+  camera.position.set(Math.sin(az) * Math.cos(el) * dist, Math.sin(el) * dist, Math.cos(az) * Math.cos(el) * dist);
+  camera.lookAt(0, 0, -10);
+  renderer.render(scene, camera);
+};
+
+if (!CAPTURE) {
+  document.getElementById('bExplode').onclick = () => explodeTarget = explodeTarget ? 0 : 1;
+  document.getElementById('bSpin').onclick = () => spin = !spin;
+  controls.autoRotateSpeed = 1.5;
+  addEventListener('resize', () => {
+    camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight);
+  });
+  renderer.setAnimationLoop(() => {
+    explode += (explodeTarget - explode) * 0.08; applyExplode(explode);
+    controls.autoRotate = spin; controls.update();
+    renderer.render(scene, camera);
+  });
+}
+window.ready = true;
+</script>
+</body>
+</html>
