@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>D-Link MEA — New Website Launched</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+Arabic:wght@500;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --ink:#0d1b2a;
+    --muted:#4a5868;
+    --line:#e6ebf0;
+    --brand:#0094a8;
+    --brand-2:#00b8c8;
+    --brand-soft:#e6f6f8;
+    --bg:#eef2f6;
+    --card:#ffffff;
+    --warm:#ff7a3d;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Plus Jakarta Sans",system-ui,sans-serif;color:var(--ink);background:var(--bg);padding:28px;-webkit-font-smoothing:antialiased}
+  .page{max-width:1240px;margin:0 auto;background:var(--card);border-radius:14px;overflow:hidden;box-shadow:0 1px 2px rgba(13,27,42,.04),0 20px 60px -30px rgba(13,27,42,.18)}
+
+  /* NAV */
+  nav{display:flex;align-items:center;justify-content:space-between;padding:22px 40px}
+  .logo{display:flex;align-items:center;gap:8px;font-weight:800;font-size:20px;letter-spacing:-.02em;text-decoration:none;color:var(--ink)}
+  .logo .mark{width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,var(--brand),var(--brand-2));display:grid;place-items:center;color:#fff;font-size:14px}
+  .logo small{font-weight:600;color:var(--brand);font-size:13px;margin-left:2px}
+  .links{display:flex;align-items:center;gap:26px;font-size:14px;font-weight:500}
+  .links a:not(.btn){color:var(--ink);text-decoration:none}
+  .links a:hover{color:var(--brand)}
+  .btn{display:inline-flex;align-items:center;gap:8px;border-radius:999px;font-weight:600;font-size:14px;text-decoration:none;padding:11px 20px;transition:transform .15s,box-shadow .15s;border:0;cursor:pointer;font-family:inherit}
+  .btn:hover{transform:translateY(-1px)}
+  .btn-dark{background:var(--ink);color:#fff}
+  .btn-dark:hover{box-shadow:0 8px 20px -8px rgba(13,27,42,.5)}
+  .btn-light{background:#fff;color:var(--ink);border:1px solid var(--line)}
+  .btn-sm{padding:8px 16px;font-size:13px}
+
+  /* HERO */
+  .hero{text-align:center;padding:40px 24px 0;position:relative}
+  .pill{display:inline-flex;align-items:center;gap:8px;background:var(--brand-soft);color:#006d7c;font-weight:600;font-size:13px;padding:6px 14px 6px 8px;border-radius:999px;margin-bottom:22px}
+  .pill .dot{width:8px;height:8px;border-radius:50%;background:#16c47f;box-shadow:0 0 0 4px rgba(22,196,127,.18);margin-left:4px}
+  h1{font-size:clamp(38px,5.6vw,68px);line-height:1.04;letter-spacing:-.035em;font-weight:800;max-width:900px;margin:0 auto}
+  h1 .accent{background:linear-gradient(90deg,var(--brand),var(--brand-2));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{font-size:clamp(17px,1.6vw,21px);color:var(--muted);max-width:640px;margin:20px auto 0;line-height:1.5;font-weight:500}
+  .sub strong{color:var(--ink)}
+  .cta{display:flex;justify-content:center;gap:12px;margin-top:30px;flex-wrap:wrap}
+  .flags{display:flex}
+  .flags span{width:22px;height:22px;border-radius:50%;background:var(--brand-soft);border:2px solid #fff;display:grid;place-items:center;font-size:9px;font-weight:800;color:#006d7c;margin-left:-6px}
+  .flags span:first-child{margin-left:0}
+
+  /* STAGE (hero visual) */
+  .stage{position:relative;margin-top:56px;height:520px;overflow:hidden;
+    background:radial-gradient(ellipse 60% 70% at 50% 100%,#d7f3f6 0%,rgba(215,243,246,0) 70%)}
+  .browser{position:absolute;left:50%;bottom:-40px;transform:translateX(-50%);width:min(640px,80%);background:#fff;border:1px solid var(--line);border-radius:16px 16px 0 0;box-shadow:0 30px 80px -20px rgba(0,70,90,.28)}
+  .bar{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--line)}
+  .bar i{width:10px;height:10px;border-radius:50%;background:#e3e7ec}
+  .url{margin-left:14px;flex:1;background:#f3f6f9;border-radius:8px;padding:6px 12px;font-size:13px;color:var(--muted);text-align:left;display:flex;align-items:center;gap:6px}
+  .url b{color:var(--ink);font-weight:600}
+  .site{padding:28px 30px 70px;text-align:left;transition:opacity .25s}
+  .site[dir="rtl"]{text-align:right;font-family:"Noto Sans Arabic","Plus Jakarta Sans",sans-serif}
+  .site-nav{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--muted);margin-bottom:26px}
+  .site-nav .l{font-weight:800;color:var(--ink);font-size:15px}
+  .site-nav .r{display:flex;gap:14px}
+  .site h3{font-size:30px;letter-spacing:-.02em;line-height:1.15;max-width:420px}
+  .site p{font-size:14px;color:var(--muted);margin-top:10px;max-width:380px}
+  .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:24px}
+  .tile{border-radius:12px;padding:14px;height:96px;color:#fff;font-weight:700;font-size:14px;display:flex;align-items:flex-end;position:relative;overflow:hidden}
+  .tile::after{content:"";position:absolute;right:-20px;top:-20px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.14)}
+  .t1{background:linear-gradient(135deg,#0d1b2a,#24435f)}
+  .t2{background:linear-gradient(135deg,var(--brand),var(--brand-2))}
+  .t3{background:linear-gradient(135deg,#ff7a3d,#ffad5c)}
+  .lang-switch{position:absolute;left:50%;transform:translateX(-50%);top:0;display:flex;gap:6px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:5px;box-shadow:0 10px 30px -14px rgba(13,27,42,.3);z-index:3}
+  .lang-switch button{border:0;background:transparent;font-family:inherit;font-weight:600;font-size:13px;padding:7px 14px;border-radius:999px;cursor:pointer;color:var(--muted)}
+  .lang-switch button.on{background:var(--ink);color:#fff}
+
+  .float{position:absolute;background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px 16px;box-shadow:0 18px 40px -18px rgba(13,27,42,.28);text-align:left;z-index:2;animation:bob 6s ease-in-out infinite}
+  .float .k{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  .float .v{font-size:30px;font-weight:800;letter-spacing:-.03em;line-height:1.1;margin-top:2px}
+  .float .s{font-size:12px;color:var(--muted);margin-top:2px}
+  .f-speed{left:4%;top:90px}
+  .f-speed .v{color:#0a9a62}
+  .f-speed .s s{color:#d4483b}
+  .f-ask{right:4%;top:70px;animation-delay:-2s}
+  .f-lang{left:3%;bottom:70px;animation-delay:-4s}
+  .f-pages{right:3%;bottom:90px;animation-delay:-3s}
+  .chips{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;max-width:180px}
+  .chip{font-size:12px;font-weight:600;padding:4px 10px;border-radius:999px;background:var(--brand-soft);color:#006d7c}
+  .chip.off{background:#f1f3f6;color:#8a96a3}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+
+  /* STATS */
+  .stats{padding:72px 40px 32px}
+  .eyebrow{font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--brand);text-align:center}
+  h2{font-size:clamp(28px,3.4vw,42px);letter-spacing:-.03em;text-align:center;margin-top:10px;font-weight:800}
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:40px}
+  .card{border:1px solid var(--line);border-radius:18px;padding:24px;display:flex;flex-direction:column;gap:10px;background:#fff}
+  .card .label{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  .card .big{font-size:56px;font-weight:800;letter-spacing:-.04em;line-height:1}
+  .card .big small{font-size:22px;letter-spacing:-.01em;color:var(--muted);font-weight:700}
+  .card .desc{font-size:14px;color:var(--muted);line-height:1.5}
+  .card .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto}
+  .card.feature{grid-column:span 2;background:linear-gradient(160deg,#0d1b2a,#16314a);color:#fff;border:0}
+  .card.feature .label,.card.feature .desc,.card.feature .big small{color:#9fb3c6}
+  .speed{display:flex;flex-direction:column;gap:12px;margin-top:6px}
+  .row{display:grid;grid-template-columns:64px 1fr 64px;align-items:center;gap:12px;font-size:13px;font-weight:600}
+  .track{height:12px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden}
+  .fill{height:100%;border-radius:99px;width:0;transition:width 1.4s cubic-bezier(.2,.8,.2,1)}
+  .fill.before{background:#ff6b5b}
+  .fill.now{background:linear-gradient(90deg,#16c47f,#5ef0b4)}
+  .row .t{text-align:right}
+  .badge{display:inline-block;background:rgba(22,196,127,.15);color:#5ef0b4;font-weight:700;font-size:13px;padding:5px 12px;border-radius:999px;width:fit-content}
+
+  /* LANDING PAGES */
+  .landing{padding:40px 40px 72px}
+  .lp{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:40px}
+  .lp a{border-radius:20px;padding:26px;min-height:220px;color:#fff;text-decoration:none;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden;transition:transform .2s}
+  .lp a:hover{transform:translateY(-4px)}
+  .lp a::before{content:"";position:absolute;inset:auto -40px -60px auto;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.1)}
+  .lp .num{font-size:13px;font-weight:700;opacity:.75}
+  .lp h4{font-size:28px;letter-spacing:-.02em;font-weight:800}
+  .lp p{font-size:14px;opacity:.85;margin-top:6px;max-width:240px}
+  .lp .go{font-size:14px;font-weight:700;margin-top:14px}
+  .lp svg{position:absolute;right:22px;top:22px;opacity:.9}
+
+  /* FOOTER CTA */
+  .end{margin:0 40px 40px;border-radius:22px;background:linear-gradient(120deg,var(--brand),var(--brand-2));color:#fff;padding:44px;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap}
+  .end h5{font-size:30px;letter-spacing:-.02em;font-weight:800}
+  .end p{opacity:.9;margin-top:6px}
+  .end .btn-dark{background:#fff;color:var(--ink)}
+
+  @media (max-width:1100px){.f-lang,.f-pages{display:none}}
+  @media (max-width:960px){
+    .links a:not(.btn){display:none}
+    .grid{grid-template-columns:1fr 1fr}
+    .lp{grid-template-columns:1fr}
+    .f-lang,.f-pages{display:none}
+  }
+  @media (max-width:640px){
+    body{padding:0}.page{border-radius:0}
+    nav,.stats,.landing{padding-left:20px;padding-right:20px}
+    .end{margin:0 20px 20px;padding:28px}
+    .grid{grid-template-columns:1fr}.card.feature{grid-column:auto}
+    .float{display:none}
+    .stage{height:440px}
+    .tiles{grid-template-columns:1fr 1fr}.t3{display:none}
+  }
+  @media (prefers-reduced-motion:reduce){.float{animation:none}.fill{transition:none}}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <nav>
+    <a class="logo" href="https://dlink-mea.com"><span class="mark">D</span>D-Link <small>MEA</small></a>
+    <div class="links">
+      <a href="#numbers">What's New</a>
+      <a href="#languages">Languages</a>
+      <a href="#landing">Landing Pages</a>
+      <a href="#ask">Ask D-Link</a>
+      <a class="btn btn-dark btn-sm" href="https://dlink-mea.com">Visit Site →</a>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="pill"><span class="dot"></span>Now live · Updated &amp; Upgraded</div>
+    <h1>A Brand-New Website,<br><span class="accent">Built for the Region.</span></h1>
+    <p class="sub">The new <strong>dlink-mea.com</strong> is fully launched in English, Arabic, French and Turkish — faster, smarter, and ready for you.</p>
+    <div class="cta">
+      <a class="btn btn-dark" href="https://dlink-mea.com">Explore the New Site →</a>
+      <a class="btn btn-light" href="#numbers">
+        <span class="flags"><span>EN</span><span>AR</span><span>FR</span><span>TR</span></span>
+        See What's New
+      </a>
+    </div>
+
+    <div class="stage">
+      <div class="lang-switch" id="langSwitch" role="tablist" aria-label="Preview language">
+        <button class="on" data-l="en">English</button>
+        <button data-l="ar">العربية</button>
+        <button data-l="fr">Français</button>
+        <button data-l="tr">Türkçe</button>
+      </div>
+
+      <div class="float f-speed">
+        <div class="k">Mobile Home Page</div>
+        <div class="v">4.4s</div>
+        <div class="s">Before: <s>21.7s</s></div>
+      </div>
+      <div class="float f-ask" id="ask">
+        <div class="k">Ask D-Link</div>
+        <div class="v">2 live</div>
+        <div class="chips"><span class="chip">English</span><span class="chip">Arabic</span></div>
+      </div>
+      <div class="float f-lang">
+        <div class="k">Languages</div>
+        <div class="v">4</div>
+        <div class="chips"><span class="chip">EN</span><span class="chip">AR</span><span class="chip">FR</span><span class="chip">TR</span></div>
+      </div>
+      <div class="float f-pages">
+        <div class="k">New Landing Pages</div>
+        <div class="v">3</div>
+        <div class="s">Data Center · Nuclias · Robotics</div>
+      </div>
+
+      <div class="browser">
+        <div class="bar"><i></i><i></i><i></i>
+          <div class="url">🔒 <b>dlink-mea.com</b><span id="urlPath">/en</span></div>
+        </div>
+        <div class="site" id="site" dir="ltr">
+          <div class="site-nav"><span class="l">D-Link</span><span class="r" id="siteNav"></span></div>
+          <h3 id="siteH"></h3>
+          <p id="siteP"></p>
+          <div class="tiles">
+            <div class="tile t1">Data Center</div>
+            <div class="tile t2">Nuclias</div>
+            <div class="tile t3">Robotics</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section class="stats" id="numbers">
+    <div class="eyebrow">The new site in numbers</div>
+    <h2>Updated. Upgraded. Live.</h2>
+
+    <div class="grid">
+      <div class="card" id="languages">
+        <div class="label">Languages</div>
+        <div class="big">4</div>
+        <div class="desc">The full site, launched in every language at once.</div>
+        <div class="tags"><span class="chip">English</span><span class="chip">Arabic</span><span class="chip">French</span><span class="chip">Turkish</span></div>
+      </div>
+
+      <div class="card">
+        <div class="label">Ask D-Link</div>
+        <div class="big">2</div>
+        <div class="desc">Languages live now for the Ask D-Link assistant.</div>
+        <div class="tags"><span class="chip">English</span><span class="chip">Arabic</span></div>
+      </div>
+
+      <div class="card feature">
+        <div class="label">Home page on mobile</div>
+        <div class="big">4.4<small>s</small></div>
+        <div class="speed">
+          <div class="row"><span>Before</span><div class="track"><div class="fill before" data-w="100"></div></div><span class="t">21.7s</span></div>
+          <div class="row"><span>Now</span><div class="track"><div class="fill now" data-w="20.3"></div></div><span class="t">4.4s</span></div>
+        </div>
+        <span class="badge">~80% faster · nearly 5× quicker</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="landing" id="landing">
+    <div class="eyebrow">3 new landing pages</div>
+    <h2>Dedicated homes for what's next.</h2>
+    <div class="lp">
+      <a class="t1" href="https://dlink-mea.com">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8"><rect x="3" y="3" width="18" height="6" rx="1.5"/><rect x="3" y="15" width="18" height="6" rx="1.5"/><path d="M7 6h.01M7 18h.01"/></svg>
+        <span class="num">01</span>
+        <div><h4>Data Center</h4><p>Switching and infrastructure for high-demand environments.</p><div class="go">Explore →</div></div>
+      </a>
+      <a class="t2" href="https://dlink-mea.com">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8"><path d="M7 18a4 4 0 0 1-.6-7.96A6 6 0 0 1 18 9a4.5 4.5 0 0 1-.5 9H7z"/></svg>
+        <span class="num">02</span>
+        <div><h4>Nuclias</h4><p>Cloud-managed networking, simplified.</p><div class="go">Explore →</div></div>
+      </a>
+      <a class="t3" href="https://dlink-mea.com">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8"><rect x="5" y="8" width="14" height="11" rx="3"/><path d="M12 4v4M9 13h.01M15 13h.01M3 13v2M21 13v2"/></svg>
+        <span class="num">03</span>
+        <div><h4>Robotics</h4><p>A new destination for D-Link's robotics range.</p><div class="go">Explore →</div></div>
+      </a>
+    </div>
+  </section>
+
+  <div class="end">
+    <div><h5>The new dlink-mea.com is live.</h5><p>English · العربية · Français · Türkçe</p></div>
+    <a class="btn btn-dark" href="https://dlink-mea.com">Visit dlink-mea.com →</a>
+  </div>
+</div>
+
+<script>
+  const copy = {
+    en:{dir:"ltr",nav:["Products","Solutions","Support","Ask D-Link"],h:"Smarter networks for the Middle East & Africa",p:"Explore products, solutions and support — now faster on every device."},
+    ar:{dir:"rtl",nav:["المنتجات","الحلول","الدعم","اسأل D-Link"],h:"شبكات أذكى للشرق الأوسط وأفريقيا",p:"اكتشف المنتجات والحلول والدعم — الآن أسرع على جميع الأجهزة."},
+    fr:{dir:"ltr",nav:["Produits","Solutions","Support","Ask D-Link"],h:"Des réseaux plus intelligents pour le Moyen-Orient et l'Afrique",p:"Découvrez produits, solutions et support — plus rapide sur tous vos appareils."},
+    tr:{dir:"ltr",nav:["Ürünler","Çözümler","Destek","Ask D-Link"],h:"Orta Doğu ve Afrika için daha akıllı ağlar",p:"Ürünleri, çözümleri ve desteği keşfedin — artık her cihazda daha hızlı."}
+  };
+  const site = document.getElementById("site");
+  function setLang(l){
+    const c = copy[l];
+    site.style.opacity = 0;
+    setTimeout(()=>{
+      site.dir = c.dir;
+      document.getElementById("siteNav").innerHTML = c.nav.map(x=>`<span>${x}</span>`).join("");
+      document.getElementById("siteH").textContent = c.h;
+      document.getElementById("siteP").textContent = c.p;
+      document.getElementById("urlPath").textContent = "/" + l;
+      site.style.opacity = 1;
+    },180);
+    document.querySelectorAll("#langSwitch button").forEach(b=>b.classList.toggle("on",b.dataset.l===l));
+  }
+  document.getElementById("langSwitch").addEventListener("click",e=>{ if(e.target.dataset.l) setLang(e.target.dataset.l); });
+  setLang("en");
+  let i = 0; const order = ["en","ar","fr","tr"];
+  const auto = setInterval(()=>{ i=(i+1)%4; setLang(order[i]); },3200);
+  document.getElementById("langSwitch").addEventListener("click",()=>clearInterval(auto),{once:true});
+
+  // Animate speed bars when visible
+  const io = new IntersectionObserver(es=>es.forEach(e=>{
+    if(e.isIntersecting){ e.target.querySelectorAll(".fill").forEach(f=>f.style.width=f.dataset.w+"%"); io.disconnect(); }
+  }),{threshold:.3});
+  io.observe(document.querySelector(".speed"));
+</script>
+</body>
+</html>
